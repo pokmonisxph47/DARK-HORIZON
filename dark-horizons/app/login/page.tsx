@@ -26,7 +26,11 @@ export default function LoginPage() {
       router.push("/dashboard");
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "";
-      if (errorMessage.includes("user-not-found") || errorMessage.includes("wrong-password") || errorMessage.includes("invalid-credential")) {
+      if (
+        errorMessage.includes("user-not-found") ||
+        errorMessage.includes("wrong-password") ||
+        errorMessage.includes("invalid-credential")
+      ) {
         setError("Incorrect email or password.");
       } else {
         setError("Login failed. Please try again.");
@@ -39,7 +43,6 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        {/* Title */}
         <div className="text-center mb-8">
           <h1
             className="text-glow text-3xl font-bold mb-2"
@@ -52,7 +55,6 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Form card */}
         <div
           className="rounded-xl border border-purple-700/50 p-8"
           style={{
@@ -60,14 +62,12 @@ export default function LoginPage() {
             boxShadow: "0 0 40px rgba(107, 33, 168, 0.2)",
           }}
         >
-          {/* Error */}
           {error && (
             <div className="mb-4 p-3 rounded-lg bg-red-900/40 border border-red-700/60 text-red-300 text-sm">
               {error}
             </div>
           )}
 
-          {/* Email */}
           <div className="mb-4">
             <label className="block text-purple-300 text-sm mb-2" style={{ fontFamily: "'Cinzel', serif" }}>
               Email
@@ -81,7 +81,6 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* Password */}
           <div className="mb-6">
             <label className="block text-purple-300 text-sm mb-2" style={{ fontFamily: "'Cinzel', serif" }}>
               Password
@@ -96,7 +95,6 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* Submit */}
           <button
             onClick={handleLogin}
             disabled={loading}
@@ -105,7 +103,6 @@ export default function LoginPage() {
             {loading ? "Entering..." : "Login"}
           </button>
 
-          {/* Link to register */}
           <p className="text-center text-purple-400 text-sm mt-5">
             No account yet?{" "}
             <Link href="/register" className="text-purple-300 hover:text-white underline transition-colors">

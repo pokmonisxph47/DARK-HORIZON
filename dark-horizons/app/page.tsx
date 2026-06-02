@@ -22,17 +22,22 @@ export default function LandingPage() {
     <main className="min-h-screen flex flex-col items-center justify-center px-4 py-16 relative overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full blur-3xl opacity-20"
-          style={{ background: "var(--purple-bright)" }} />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl opacity-10"
-          style={{ background: "var(--blue-mystic)" }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-3xl opacity-5"
-          style={{ background: "var(--crimson)" }} />
+        <div
+          className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full blur-3xl opacity-20"
+          style={{ background: "var(--purple-bright)" }}
+        />
+        <div
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl opacity-10"
+          style={{ background: "var(--blue-mystic)" }}
+        />
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-3xl opacity-5"
+          style={{ background: "var(--crimson)" }}
+        />
       </div>
 
       {/* Hero content */}
       <div className="relative z-10 text-center max-w-3xl">
-
         {/* Decorative line */}
         <div className="flex items-center justify-center gap-4 mb-6">
           <div className="h-px w-24 bg-gradient-to-r from-transparent to-yellow-600" />
@@ -66,8 +71,8 @@ export default function LandingPage() {
           className="text-purple-300 text-lg md:text-xl mb-12 leading-relaxed max-w-xl mx-auto italic"
           style={{ fontFamily: "'Crimson Text', serif" }}
         >
-          "Beyond the veil of mortal sight lie kingdoms swallowed by time,
-          and seas that whisper the names of forgotten gods."
+          &ldquo;Beyond the veil of mortal sight lie kingdoms swallowed by time,
+          and seas that whisper the names of forgotten gods.&rdquo;
         </p>
 
         {/* CTA Buttons */}

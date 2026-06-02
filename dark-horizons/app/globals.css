@@ -34,12 +34,10 @@ body {
   background-attachment: fixed;
 }
 
-/* Scrollbar styling */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--purple-deep); }
 ::-webkit-scrollbar-thumb { background: var(--purple-bright); border-radius: 3px; }
 
-/* Glow text effect */
 .text-glow {
   text-shadow: 0 0 20px rgba(201, 168, 76, 0.8), 0 0 40px rgba(201, 168, 76, 0.4);
 }
@@ -48,12 +46,10 @@ body {
   text-shadow: 0 0 20px rgba(147, 51, 234, 0.9), 0 0 40px rgba(147, 51, 234, 0.5);
 }
 
-/* Gold border glow */
 .border-glow {
   box-shadow: 0 0 15px rgba(201, 168, 76, 0.3), inset 0 0 15px rgba(201, 168, 76, 0.05);
 }
 
-/* Locked area overlay */
 .locked-overlay {
   background: repeating-linear-gradient(
     45deg,
@@ -64,7 +60,6 @@ body {
   );
 }
 
-/* Animated shimmer for buttons */
 @keyframes shimmer {
   0% { background-position: -200% center; }
   100% { background-position: 200% center; }
@@ -86,7 +81,6 @@ body {
   box-shadow: 0 8px 25px rgba(201, 168, 76, 0.5);
 }
 
-/* Floating animation */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-8px); }
@@ -96,7 +90,6 @@ body {
   animation: float 4s ease-in-out infinite;
 }
 
-/* Pulse glow */
 @keyframes pulseGlow {
   0%, 100% { box-shadow: 0 0 10px rgba(107, 33, 168, 0.4); }
   50% { box-shadow: 0 0 30px rgba(107, 33, 168, 0.8), 0 0 60px rgba(107, 33, 168, 0.3); }
@@ -104,10 +97,4 @@ body {
 
 .pulse-glow {
   animation: pulseGlow 3s ease-in-out infinite;
-}
-
-/* Stars background effect */
-@keyframes twinkle {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
 }

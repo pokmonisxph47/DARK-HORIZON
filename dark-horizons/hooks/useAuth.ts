@@ -10,7 +10,7 @@ import { auth, db } from "@/lib/firebase";
 const DEFAULT_USER_DATA = {
   rank: "Noob",
   zenCoins: 0,
-  pets: [],
+  pets: [] as string[],
   ores: 0,
   berries: 0,
 };
@@ -21,7 +21,7 @@ export async function registerUser(email: string, password: string, username: st
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const uid = userCredential.user.uid;
 
-  // 2. Save their game data in Firestore (only written once at registration)
+  // 2. Save their game data in Firestore
   await setDoc(doc(db, "users", uid), {
     uid,
     username,

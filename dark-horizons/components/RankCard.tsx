@@ -6,7 +6,6 @@ interface RankCardProps {
   berries: number;
 }
 
-// Each rank gets a different color to feel special
 const RANK_COLORS: Record<string, string> = {
   Noob: "#94a3b8",
   Pro: "#22c55e",
@@ -29,13 +28,11 @@ export default function RankCard({ username, rank, zenCoins, ores, berries }: Ra
         boxShadow: `0 0 25px ${rankColor}33, inset 0 0 25px rgba(0,0,0,0.3)`,
       }}
     >
-      {/* Decorative corner */}
       <div
         className="absolute top-0 right-0 w-32 h-32 opacity-10 rounded-full blur-2xl"
         style={{ background: rankColor }}
       />
 
-      {/* Username */}
       <h2
         className="text-2xl md:text-3xl font-bold mb-1"
         style={{ fontFamily: "'Cinzel', serif", color: "var(--gold-light)" }}
@@ -43,7 +40,6 @@ export default function RankCard({ username, rank, zenCoins, ores, berries }: Ra
         {username}
       </h2>
 
-      {/* Rank badge */}
       <div className="flex items-center gap-2 mb-5">
         <span className="text-sm text-purple-400" style={{ fontFamily: "'Cinzel', serif" }}>
           Rank:
@@ -61,7 +57,6 @@ export default function RankCard({ username, rank, zenCoins, ores, berries }: Ra
         </span>
       </div>
 
-      {/* Stats row */}
       <div className="grid grid-cols-3 gap-4">
         <Stat icon="🪙" label="Zen Coins" value={zenCoins} color="var(--gold)" />
         <Stat icon="⛏️" label="Ores" value={ores} color="#60a5fa" />
@@ -71,7 +66,6 @@ export default function RankCard({ username, rank, zenCoins, ores, berries }: Ra
   );
 }
 
-// Small helper component for each stat
 function Stat({ icon, label, value, color }: { icon: string; label: string; value: number; color: string }) {
   return (
     <div

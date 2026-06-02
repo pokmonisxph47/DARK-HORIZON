@@ -8,7 +8,6 @@ import Navbar from "@/components/Navbar";
 import RankCard from "@/components/RankCard";
 import AreaCard from "@/components/AreaCard";
 
-// Define what a player's data looks like
 interface PlayerData {
   username: string;
   rank: string;
@@ -18,14 +17,12 @@ interface PlayerData {
   pets: string[];
 }
 
-// Rank order — used to check if an area is unlocked
 const RANK_ORDER = ["Noob", "Pro", "Awsunm", "God", "Heavens", "Over Heavens", "Dark Horizon"];
 
 function hasRank(playerRank: string, requiredRank: string): boolean {
   return RANK_ORDER.indexOf(playerRank) >= RANK_ORDER.indexOf(requiredRank);
 }
 
-// All game areas
 const AREAS = [
   {
     name: "Pet Catching Area",
@@ -90,7 +87,7 @@ export default function DashboardPage() {
     }
   }, [user, loading, router]);
 
-  // Load player data from Firestore (only once on mount)
+  // Load player data from Firestore
   useEffect(() => {
     if (user) {
       getUserData(user.uid).then((data) => {
@@ -100,7 +97,6 @@ export default function DashboardPage() {
     }
   }, [user]);
 
-  // Loading screen
   if (loading || dataLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -121,7 +117,6 @@ export default function DashboardPage() {
       <Navbar username={playerData.username} />
 
       <main className="max-w-5xl mx-auto px-4 py-8">
-        {/* Player stats card */}
         <RankCard
           username={playerData.username}
           rank={playerData.rank}
@@ -130,7 +125,6 @@ export default function DashboardPage() {
           berries={playerData.berries}
         />
 
-        {/* Section title */}
         <div className="flex items-center gap-4 mb-6">
           <div className="h-px flex-1 bg-gradient-to-r from-purple-800 to-transparent" />
           <h2
@@ -142,7 +136,6 @@ export default function DashboardPage() {
           <div className="h-px flex-1 bg-gradient-to-l from-purple-800 to-transparent" />
         </div>
 
-        {/* Area cards grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {AREAS.map((area) => {
             const isLocked = !hasRank(playerData.rank, area.requiredRank);
@@ -154,15 +147,16 @@ export default function DashboardPage() {
                 description={area.description}
                 isLocked={isLocked}
                 requiredRank={isLocked ? area.requiredRank : undefined}
-                onClick={() => alert(`${area.name} coming soon!`)}
+                onClick={() => alert(`${area.name} — coming soon!`)}
               />
             );
           })}
         </div>
 
-        {/* Pets section */}
-        <div className="mt-8 p-5 rounded-xl border border-purple-800/40"
-          style={{ background: "rgba(26,10,46,0.7)" }}>
+        <div
+          className="mt-8 p-5 rounded-xl border border-purple-800/40"
+          style={{ background: "rgba(26,10,46,0.7)" }}
+        >
           <h3
             className="text-purple-300 mb-3"
             style={{ fontFamily: "'Cinzel', serif" }}
@@ -176,7 +170,10 @@ export default function DashboardPage() {
           ) : (
             <div className="flex gap-2 flex-wrap">
               {playerData.pets.map((pet, i) => (
-                <span key={i} className="bg-purple-900/50 border border-purple-700 rounded-full px-3 py-1 text-sm text-purple-300">
+                <span
+                  key={i}
+                  className="bg-purple-900/50 border border-purple-700 rounded-full px-3 py-1 text-sm text-purple-300"
+                >
                   {pet}
                 </span>
               ))}

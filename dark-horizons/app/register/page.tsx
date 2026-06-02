@@ -16,7 +16,6 @@ export default function RegisterPage() {
   async function handleRegister() {
     setError("");
 
-    // Basic validation
     if (!username.trim() || !email.trim() || !password.trim()) {
       setError("Please fill in all fields.");
       return;
@@ -32,7 +31,6 @@ export default function RegisterPage() {
       router.push("/dashboard");
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Registration failed.";
-      // Make Firebase errors more readable
       if (errorMessage.includes("email-already-in-use")) {
         setError("That email is already registered. Try logging in.");
       } else if (errorMessage.includes("invalid-email")) {
@@ -48,7 +46,6 @@ export default function RegisterPage() {
   return (
     <main className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        {/* Title */}
         <div className="text-center mb-8">
           <h1
             className="text-glow text-3xl font-bold mb-2"
@@ -61,7 +58,6 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        {/* Form card */}
         <div
           className="rounded-xl border border-purple-700/50 p-8"
           style={{
@@ -69,14 +65,12 @@ export default function RegisterPage() {
             boxShadow: "0 0 40px rgba(107, 33, 168, 0.2)",
           }}
         >
-          {/* Error message */}
           {error && (
             <div className="mb-4 p-3 rounded-lg bg-red-900/40 border border-red-700/60 text-red-300 text-sm">
               {error}
             </div>
           )}
 
-          {/* Username */}
           <div className="mb-4">
             <label className="block text-purple-300 text-sm mb-2" style={{ fontFamily: "'Cinzel', serif" }}>
               Username
@@ -90,7 +84,6 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* Email */}
           <div className="mb-4">
             <label className="block text-purple-300 text-sm mb-2" style={{ fontFamily: "'Cinzel', serif" }}>
               Email
@@ -104,7 +97,6 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* Password */}
           <div className="mb-6">
             <label className="block text-purple-300 text-sm mb-2" style={{ fontFamily: "'Cinzel', serif" }}>
               Password
@@ -119,7 +111,6 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* Submit */}
           <button
             onClick={handleRegister}
             disabled={loading}
@@ -128,7 +119,6 @@ export default function RegisterPage() {
             {loading ? "Creating Account..." : "Register"}
           </button>
 
-          {/* Link to login */}
           <p className="text-center text-purple-400 text-sm mt-5">
             Already have an account?{" "}
             <Link href="/login" className="text-purple-300 hover:text-white underline transition-colors">
