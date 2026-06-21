@@ -11,8 +11,20 @@ const DEFAULT_USER_DATA = {
   rank: "Noob",
   zenCoins: 0,
   pets: [] as string[],
-  ores: 0,
-  berries: 0,
+  ores: {
+    stone: 0,
+    iron: 0,
+    crystal: 0,
+    mystic: 0,
+    dark: 0,
+  },
+  balls: {
+    basic: 0,
+    iron: 0,
+    crystal: 0,
+    mystic: 0,
+    dark: 0,
+  },
 };
 
 // Register a brand new account

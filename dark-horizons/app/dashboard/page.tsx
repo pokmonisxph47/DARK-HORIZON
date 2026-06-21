@@ -3,182 +3,210 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { getUserData } from "@/hooks/useAuth";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { mineRandomOre, ORE_DATA, OreType } from "@/lib/mining";
 import Navbar from "@/components/Navbar";
-import RankCard from "@/components/RankCard";
-import AreaCard from "@/components/AreaCard";
+import Link from "next/link";
 
-interface PlayerData {
-  username: string;
-  rank: string;
-  zenCoins: number;
-  ores: number;
-  berries: number;
-  pets: string[];
+interface PlayerOres {
+  stone: number;
+  iron: number;
+  crystal: number;
+  mystic: number;
+  dark: number;
 }
 
-const RANK_ORDER = ["Noob", "Pro", "Awsunm", "God", "Heavens", "Over Heavens", "Dark Horizon"];
-
-function hasRank(playerRank: string, requiredRank: string): boolean {
-  return RANK_ORDER.indexOf(playerRank) >= RANK_ORDER.indexOf(requiredRank);
-}
-
-const AREAS = [
-  {
-    name: "Pet Catching Area",
-    icon: "🐾",
-    description: "Venture into the wild to catch magical creatures and build your pet collection.",
-    requiredRank: "Noob",
-  },
-  {
-    name: "Mining Zone",
-    icon: "⛏️",
-    description: "Descend into ancient mines filled with rare ores and forgotten treasures.",
-    requiredRank: "Noob",
-  },
-  {
-    name: "Roll Area",
-    icon: "🎲",
-    description: "Test your luck and fate at the mystic roll table. Fortune favors the bold.",
-    requiredRank: "Noob",
-  },
-  {
-    name: "1st Sea",
-    icon: "🌊",
-    description: "Sail the outer waters of the Mystic Seas. Adventure awaits beyond the horizon.",
-    requiredRank: "Pro",
-  },
-  {
-    name: "2nd Sea",
-    icon: "🌀",
-    description: "The deeper currents hold stronger monsters and greater rewards.",
-    requiredRank: "Awsunm",
-  },
-  {
-    name: "3rd Sea",
-    icon: "🔱",
-    description: "Ancient maritime gods rule these treacherous waters. Only the worthy survive.",
-    requiredRank: "God",
-  },
-  {
-    name: "Beast Sea",
-    icon: "🐉",
-    description: "The legendary sea where colossal beasts from legend roam freely.",
-    requiredRank: "Heavens",
-  },
-  {
-    name: "Dungeons",
-    icon: "🏰",
-    description: "Sealed ruins of the Lost Kingdoms, filled with relics and ultimate challenges.",
-    requiredRank: "Over Heavens",
-  },
-];
-
-export default function DashboardPage() {
+export default function MiningPage() {
   const { user, loading } = useAuthContext();
   const router = useRouter();
-  const [playerData, setPlayerData] = useState<PlayerData | null>(null);
+  const [ores, setOres] = useState<PlayerOres>({
+    stone: 0,
+    iron: 0,
+    crystal: 0,
+    mystic: 0,
+    dark: 0,
+  });
+  const [lastMinedOre, setLastMinedOre] = useState<OreType | null>(null);
+  const [miningInProgress, setMiningInProgress] = useState(false);
+  const [message, setMessage] = useState("");
   const [dataLoading, setDataLoading] = useState(true);
 
-  // Redirect to login if not authenticated
+  // Redirect if not logged in
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
     }
   }, [user, loading, router]);
 
-  // Load player data from Firestore
+  // Load player's ores from Firestore
   useEffect(() => {
     if (user) {
-      getUserData(user.uid).then((data) => {
-        if (data) setPlayerData(data as PlayerData);
+      const fetchOres = async () => {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          setOres(
+            data.ores || {
+              stone: 0,
+              iron: 0,
+              crystal: 0,
+              mystic: 0,
+              dark: 0,
+            }
+          );
+        }
         setDataLoading(false);
-      });
+      };
+      fetchOres();
     }
   }, [user]);
+
+  // Mine an ore
+  async function handleMine() {
+    if (miningInProgress) return;
+    setMiningInProgress(true);
+    setMessage("");
+
+    try {
+      // 1. Roll a random ore
+      const minedOreType = mineRandomOre();
+      const oreName = ORE_DATA[minedOreType].name;
+      const oreEmoji = ORE_DATA[minedOreType].emoji;
+
+      // 2. Update local state
+      setLastMinedOre(minedOreType);
+      const newOres = { ...ores };
+      newOres[minedOreType]++;
+      setOres(newOres);
+
+      // 3. Save to Firestore
+      await updateDoc(doc(db, "users", user!.uid), {
+        ores: newOres,
+      });
+
+      setMessage(`⛏️ Mined ${oreEmoji} ${oreName}!`);
+
+      // Clear message after 2 seconds
+      setTimeout(() => setMessage(""), 2000);
+    } catch (err) {
+      console.error("Mining error:", err);
+      setMessage("Error saving ore. Try again.");
+    } finally {
+      setMiningInProgress(false);
+    }
+  }
 
   if (loading || dataLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-5xl mb-4 float-anim">⚔️</div>
-          <p className="text-purple-400 text-lg" style={{ fontFamily: "'Cinzel', serif" }}>
-            Loading your legend...
-          </p>
-        </div>
+        <p className="text-purple-400">Loading mines...</p>
       </div>
     );
   }
 
-  if (!playerData) return null;
-
   return (
     <div className="min-h-screen">
-      <Navbar username={playerData.username} />
+      <Navbar username="" />
 
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        <RankCard
-          username={playerData.username}
-          rank={playerData.rank}
-          zenCoins={playerData.zenCoins}
-          ores={playerData.ores}
-          berries={playerData.berries}
-        />
-
-        <div className="flex items-center gap-4 mb-6">
-          <div className="h-px flex-1 bg-gradient-to-r from-purple-800 to-transparent" />
-          <h2
-            className="text-purple-300 text-sm tracking-widest uppercase"
-            style={{ fontFamily: "'Cinzel', serif" }}
+      <main className="max-w-2xl mx-auto px-4 py-8">
+        {/* Title */}
+        <div className="text-center mb-8">
+          <h1
+            className="text-glow text-4xl font-bold mb-2"
+            style={{ fontFamily: "'Cinzel Decorative', serif", color: "var(--gold)" }}
           >
-            ✦ Game Areas ✦
-          </h2>
-          <div className="h-px flex-1 bg-gradient-to-l from-purple-800 to-transparent" />
+            ⛏️ Mining Zone
+          </h1>
+          <p className="text-purple-400">Descend into ancient mines for rare ores</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {AREAS.map((area) => {
-            const isLocked = !hasRank(playerData.rank, area.requiredRank);
-            return (
-              <AreaCard
-                key={area.name}
-                name={area.name}
-                icon={area.icon}
-                description={area.description}
-                isLocked={isLocked}
-                requiredRank={isLocked ? area.requiredRank : undefined}
-                onClick={() => alert(`${area.name} — coming soon!`)}
-              />
-            );
-          })}
-        </div>
-
+        {/* Mining Panel */}
         <div
-          className="mt-8 p-5 rounded-xl border border-purple-800/40"
-          style={{ background: "rgba(26,10,46,0.7)" }}
+          className="rounded-xl border border-purple-700/50 p-8 mb-8"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(26,10,46,0.9) 0%, rgba(45,27,78,0.8) 100%)",
+            boxShadow: "0 0 40px rgba(107, 33, 168, 0.2)",
+          }}
         >
-          <h3
-            className="text-purple-300 mb-3"
-            style={{ fontFamily: "'Cinzel', serif" }}
-          >
-            🐾 Your Pets ({playerData.pets.length})
-          </h3>
-          {playerData.pets.length === 0 ? (
-            <p className="text-purple-600 text-sm italic">
-              You have no pets yet. Visit the Pet Catching Area to find one!
-            </p>
-          ) : (
-            <div className="flex gap-2 flex-wrap">
-              {playerData.pets.map((pet, i) => (
-                <span
-                  key={i}
-                  className="bg-purple-900/50 border border-purple-700 rounded-full px-3 py-1 text-sm text-purple-300"
-                >
-                  {pet}
-                </span>
-              ))}
+          {/* Last mined display */}
+          {lastMinedOre && (
+            <div
+              className="mb-6 p-4 rounded-lg text-center border border-purple-600/50"
+              style={{ background: "rgba(147, 51, 234, 0.1)" }}
+            >
+              <div className="text-3xl mb-2">{ORE_DATA[lastMinedOre].emoji}</div>
+              <p
+                className="text-purple-300"
+                style={{ fontFamily: "'Cinzel', serif" }}
+              >
+                {ORE_DATA[lastMinedOre].name}
+              </p>
             </div>
           )}
+
+          {/* Mine button */}
+          <button
+            onClick={handleMine}
+            disabled={miningInProgress}
+            className="w-full btn-gold py-4 rounded-lg text-lg mb-6 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {miningInProgress ? "Mining..." : "Mine Ore"}
+          </button>
+
+          {/* Status message */}
+          {message && (
+            <div className="text-center text-purple-300 mb-4" style={{ fontFamily: "'Cinzel', serif" }}>
+              {message}
+            </div>
+          )}
+        </div>
+
+        {/* Ore Inventory */}
+        <div
+          className="rounded-xl border border-purple-700/50 p-6 mb-8"
+          style={{
+            background: "rgba(26,10,46,0.7)",
+          }}
+        >
+          <h2
+            className="text-purple-300 text-lg mb-4"
+            style={{ fontFamily: "'Cinzel', serif" }}
+          >
+            📦 Your Ores
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            {(["stone", "iron", "crystal", "mystic", "dark"] as OreType[]).map(
+              (oreType) => {
+                const ore = ORE_DATA[oreType];
+                return (
+                  <div
+                    key={oreType}
+                    className="rounded-lg p-3 text-center border border-purple-800/30"
+                    style={{ background: "rgba(0,0,0,0.3)" }}
+                  >
+                    <div className="text-2xl mb-1">{ore.emoji}</div>
+                    <div className="text-lg font-bold text-purple-300">
+                      {ores[oreType]}
+                    </div>
+                    <div className="text-xs text-purple-500">{ore.name}</div>
+                  </div>
+                );
+              }
+            )}
+          </div>
+        </div>
+
+        {/* Back to Dashboard */}
+        <div className="text-center">
+          <Link
+            href="/dashboard"
+            className="text-purple-400 hover:text-purple-300 underline"
+            style={{ fontFamily: "'Cinzel', serif" }}
+          >
+            ← Back to Dashboard
+          </Link>
         </div>
       </main>
     </div>

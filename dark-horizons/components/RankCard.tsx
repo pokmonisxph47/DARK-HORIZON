@@ -2,8 +2,7 @@ interface RankCardProps {
   username: string;
   rank: string;
   zenCoins: number;
-  ores: number;
-  berries: number;
+  ores: Record<string, number>;
 }
 
 const RANK_COLORS: Record<string, string> = {
@@ -16,8 +15,11 @@ const RANK_COLORS: Record<string, string> = {
   "Dark Horizon": "#ef4444",
 };
 
-export default function RankCard({ username, rank, zenCoins, ores, berries }: RankCardProps) {
+export default function RankCard({ username, rank, zenCoins, ores }: RankCardProps) {
   const rankColor = RANK_COLORS[rank] || "#94a3b8";
+  
+  // Sum all ores (stone + iron + crystal + mystic + dark)
+  const totalOres = Object.values(ores).reduce((sum, count) => sum + count, 0);
 
   return (
     <div
@@ -59,8 +61,8 @@ export default function RankCard({ username, rank, zenCoins, ores, berries }: Ra
 
       <div className="grid grid-cols-3 gap-4">
         <Stat icon="🪙" label="Zen Coins" value={zenCoins} color="var(--gold)" />
-        <Stat icon="⛏️" label="Ores" value={ores} color="#60a5fa" />
-        <Stat icon="🍓" label="Berries" value={berries} color="#f87171" />
+        <Stat icon="⛏️" label="Total Ores" value={totalOres} color="#60a5fa" />
+        <Stat icon="🎮" label="Pet Balls" value={0} color="#a855f7" />
       </div>
     </div>
   );
