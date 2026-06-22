@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { AMBIENT_PARTICLES, WORLD_HEIGHT, WORLD_WIDTH, WorldZone, ZONES } from "@/lib/worldZones";
+import { AMBIENT_PARTICLES, WORLD_HEIGHT, WORLD_WIDTH, WorldZone, ZONES } from "@/lib/worldzones";
 
 interface WorldMapProps {
   cameraX: number;

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
-import { useAuthContext } from "@/contexts/AuthContext";
+import { useAuthContext } from "@/contexts/authcontext";
 import { useRouter } from "next/navigation";
 
 export default function LandingPage() {

@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthContext } from "@/contexts/AuthContext";
-import { getUserData } from "@/hooks/useAuth";
-import Navbar from "@/components/Navbar";
-import RankCard from "@/components/RankCard";
-import AreaCard from "@/components/AreaCard";
-import CraftingPanel from "@/components/CraftingPanel";
+import { useAuthContext } from "@/contexts/authcontext";
+import { getUserData } from "@/hooks/useauth";
+import Navbar from "@/components/navbar";
+import RankCard from "@/components/rankcard";
+import AreaCard from "@/components/areacard";
+import CraftingPanel from "@/components/craftingpanel";
 
 interface PlayerData {
   username: string;

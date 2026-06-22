@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { loginUser } from "@/hooks/useAuth";
+import { loginUser } from "@/hooks/useauth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 

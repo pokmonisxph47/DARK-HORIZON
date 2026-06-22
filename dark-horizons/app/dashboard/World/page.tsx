@@ -2,14 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthContext } from "@/contexts/AuthContext";
-import { getUserData } from "@/hooks/useAuth";
+import { useAuthContext } from "@/contexts/authcontext";
+import { getUserData } from "@/hooks/useauth";
 import { useWorldMovement } from "@/hooks/useWorldMovement";
-import WorldMap from "@/components/world/WorldMap";
-import PlayerCharacter from "@/components/world/PlayerCharacter";
-import MobileControls from "@/components/world/MobileControls";
-import { WorldHUDTop, WorldHUDBottom } from "@/components/world/WorldHUD";
-import { ZoneAnnouncementModal, MapOverviewModal } from "@/components/world/ZoneModal";
+import WorldMap from "@/components/world/worldmap";
+import PlayerCharacter from "@/components/world/playercharacter";
+import MobileControls from "@/components/world/mobilecontrols";
+import { WorldHUDTop, WorldHUDBottom } from "@/components/world/worldhud";
+import { ZoneAnnouncementModal, MapOverviewModal } from "@/components/world/zonemodal";
 import {
   INTERACTIVE_ZONE_TYPES,
   PLAYER_SIZE,
@@ -20,7 +20,7 @@ import {
   WorldZone,
   ZONES,
   isPointInZone,
-} from "@/lib/worldZones";
+} from "@/lib/worldzones";
 
 interface PlayerData {
   username: string;

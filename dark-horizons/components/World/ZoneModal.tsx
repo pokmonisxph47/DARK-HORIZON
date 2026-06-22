@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { WORLD_HEIGHT, WORLD_WIDTH, ZONES } from "@/lib/worldZones";
+import { WORLD_HEIGHT, WORLD_WIDTH, ZONES } from "@/lib/worldzones";
 
 function ModalShell({ children, onClose }: { children: ReactNode; onClose: () => void }) {
   return (

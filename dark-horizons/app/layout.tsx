@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider } from "@/contexts/authcontext";
 
 export const metadata: Metadata = {
   title: "Dark Horizons: Legends of Lost Kingdoms",
