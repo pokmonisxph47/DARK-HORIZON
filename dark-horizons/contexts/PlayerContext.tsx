@@ -11,7 +11,7 @@ import {
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuthContext } from "@/contexts/AuthContext";
-import type { PlayerData } from "@/types/player";
+import type { BallInventory, OreInventory, Pet, PlayerData, Rank } from "@/types/player";
 
 interface PlayerContextType {
   playerData: PlayerData | null;
@@ -32,6 +32,52 @@ const PlayerContext = createContext<PlayerContextType>({
   updateOresAndBalls: async () => {},
 });
 
+const DEFAULT_ORES: OreInventory = {
+  stone: 0,
+  iron: 0,
+  crystal: 0,
+  mystic: 0,
+  dark: 0,
+};
+
+const DEFAULT_BALLS: BallInventory = {
+  basic: 0,
+  iron: 0,
+  crystal: 0,
+  mystic: 0,
+  dark: 0,
+  exotic: 0,
+};
+
+function normalizeNumber(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function normalizePlayerData(raw: Partial<PlayerData> & { uid?: unknown }): PlayerData {
+  const rawOres = raw.ores ?? {};
+  const rawBalls = raw.balls ?? {};
+
+  return {
+    uid: typeof raw.uid === "string" ? raw.uid : "",
+    username: typeof raw.username === "string" ? raw.username : "Player",
+    rank: (typeof raw.rank === "string" ? raw.rank : "Noob") as Rank,
+    zenCoins: normalizeNumber(raw.zenCoins),
+    pets: Array.isArray(raw.pets) ? (raw.pets as Pet[]) : [],
+    ores: {
+      ...DEFAULT_ORES,
+      ...rawOres,
+    },
+    balls: {
+      ...DEFAULT_BALLS,
+      ...rawBalls,
+    },
+    totalOresMined: normalizeNumber(raw.totalOresMined),
+    totalPetsCaught: normalizeNumber(raw.totalPetsCaught),
+    totalRolls: normalizeNumber(raw.totalRolls),
+    createdAt: raw.createdAt,
+  };
+}
+
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuthContext();
   const [playerData, setPlayerData] = useState<PlayerData | null>(null);
@@ -47,7 +93,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     try {
       const snap = await getDoc(doc(db, "users", user.uid));
       if (snap.exists()) {
-        setPlayerData(snap.data() as PlayerData);
+        setPlayerData(normalizePlayerData(snap.data() as Partial<PlayerData>));
       } else {
         setPlayerData(null);
       }
@@ -66,8 +112,15 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const updateOresAndBalls = useCallback(
     async (ores: PlayerData["ores"], balls: PlayerData["balls"]) => {
       if (!user || !playerData) return;
-      await updateDoc(doc(db, "users", user.uid), { ores, balls });
-      setPlayerData((prev) => (prev ? { ...prev, ores, balls } : prev));
+      const normalizedOres = { ...DEFAULT_ORES, ...ores };
+      const normalizedBalls = { ...DEFAULT_BALLS, ...balls };
+      await updateDoc(doc(db, "users", user.uid), {
+        ores: normalizedOres,
+        balls: normalizedBalls,
+      });
+      setPlayerData((prev) =>
+        prev ? { ...prev, ores: normalizedOres, balls: normalizedBalls } : prev
+      );
     },
     [user, playerData]
   );

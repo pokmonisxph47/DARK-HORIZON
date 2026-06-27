@@ -1,7 +1,9 @@
 "use client";
 
-import { ReactNode } from "react";
+import { memo, ReactNode } from "react";
+import type { CSSProperties } from "react";
 import { AMBIENT_PARTICLES, WORLD_HEIGHT, WORLD_WIDTH, WorldZone, ZONES } from "@/lib/worldzones";
+import { DecorativeObjects, TerrainLayers, WalkingPaths, WaterSystem } from "@/components/world/WorldDecor";
 
 interface WorldMapProps {
   cameraX: number;
@@ -12,7 +14,7 @@ interface WorldMapProps {
   children?: ReactNode;
 }
 
-export default function WorldMap({
+function WorldMap({
   cameraX,
   cameraY,
   viewportWidth,
@@ -25,88 +27,67 @@ export default function WorldMap({
       className="absolute top-0 left-0 overflow-hidden"
       style={{ width: viewportWidth, height: viewportHeight }}
     >
+      <div className="world-vignette pointer-events-none" />
       <div
-        className="absolute top-0 left-0"
+        className="absolute top-0 left-0 world-canvas"
         style={{
           width: WORLD_WIDTH,
           height: WORLD_HEIGHT,
-          transform: `translate(${-cameraX}px, ${-cameraY}px)`,
-          backgroundColor: "#120a26",
-          backgroundImage:
-            "radial-gradient(ellipse at 15% 20%, rgba(107, 33, 168, 0.25) 0%, transparent 45%)," +
-            "radial-gradient(ellipse at 85% 15%, rgba(30, 58, 138, 0.25) 0%, transparent 45%)," +
-            "radial-gradient(ellipse at 50% 90%, rgba(13, 148, 136, 0.18) 0%, transparent 50%)," +
-            "linear-gradient(180deg, rgba(26,10,46,1) 0%, rgba(10,15,46,1) 100%)",
+          transform: `translate3d(${-cameraX}px, ${-cameraY}px, 0)`,
         }}
       >
-        {/* Subtle terrain grid */}
-        <div
-          className="absolute inset-0 opacity-[0.06] pointer-events-none"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(201,168,76,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,0.5) 1px, transparent 1px)",
-            backgroundSize: "60px 60px",
-          }}
-        />
+        <div className="terrain-base" />
+        <TerrainLayers />
+        <WaterSystem />
+        <WalkingPaths />
+        <DecorativeObjects />
 
-        {/* Ambient twinkling particles */}
         {AMBIENT_PARTICLES.map((p) => (
           <div
             key={p.id}
-            className="absolute rounded-full pointer-events-none"
+            className="ambient-light pointer-events-none"
             style={{
               left: p.x,
               top: p.y,
-              width: p.size,
-              height: p.size,
-              background: "var(--gold-light)",
-              animation: `twinkle 3s ease-in-out ${p.delay}s infinite`,
+              width: p.size + 4,
+              height: p.size + 4,
+              animationDelay: `${p.delay}s`,
             }}
           />
         ))}
 
-        {/* Zones */}
         {ZONES.map((zone) => (
           <ZoneTile key={zone.id} zone={zone} active={activeZoneId === zone.id} />
         ))}
 
-        {/* Player + anything else injected by the parent */}
+        <div className="map-lighting pointer-events-none" />
         {children}
       </div>
     </div>
   );
 }
 
-function ZoneTile({ zone, active }: { zone: WorldZone; active: boolean }) {
+export default memo(WorldMap);
+
+const ZoneTile = memo(function ZoneTile({ zone, active }: { zone: WorldZone; active: boolean }) {
   const isScenic = zone.type === "scenic";
 
   return (
     <div
-      className="absolute rounded-2xl"
+      className={`zone-marker ${active ? "zone-marker-active" : ""} ${isScenic ? "zone-marker-scenic" : ""}`}
       style={{
         left: zone.x,
         top: zone.y,
         width: zone.width,
         height: zone.height,
-        background: isScenic
-          ? `linear-gradient(135deg, ${zone.color}33 0%, ${zone.color}14 100%)`
-          : `linear-gradient(135deg, ${zone.color}26 0%, rgba(15,10,30,0.6) 100%)`,
-        border: `1.5px solid ${zone.color}${isScenic ? "55" : active ? "ee" : "99"}`,
-        boxShadow: active
-          ? `0 0 35px ${zone.color}99, inset 0 0 25px ${zone.color}33`
-          : `0 0 18px ${zone.color}22, inset 0 0 15px rgba(0,0,0,0.25)`,
-        transition: "box-shadow 0.3s ease, border-color 0.3s ease",
-      }}
+        "--zone-color": zone.color,
+      } as CSSProperties}
     >
-      <div className="flex flex-col items-center justify-center h-full gap-1 px-2 text-center">
-        <span style={{ fontSize: Math.min(zone.width, zone.height) * 0.22 }}>{zone.icon}</span>
-        <span
-          className="text-xs md:text-sm font-bold tracking-wide uppercase"
-          style={{ fontFamily: "'Cinzel', serif", color: zone.color }}
-        >
-          {zone.name}
-        </span>
+      <div className="zone-marker-glow" />
+      <div className="zone-label">
+        <span className="zone-icon">{zone.icon}</span>
+        <span className="zone-name">{zone.name}</span>
       </div>
     </div>
   );
-}
+});

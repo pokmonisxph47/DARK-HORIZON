@@ -1,16 +1,54 @@
 import { RANK_COLORS } from "@/constants/ranks";
-import type { OreInventory } from "@/types/player";
+import type { BallInventory, OreInventory } from "@/types/player";
 
 interface RankCardProps {
   username: string;
   rank: string;
   zenCoins: number;
-  ores: OreInventory;
+  ores?: Partial<OreInventory> | null;
+  petCount: number;
+  balls?: Partial<BallInventory> | null;
 }
 
-export default function RankCard({ username, rank, zenCoins, ores }: RankCardProps) {
+const DEFAULT_ORES: OreInventory = {
+  stone: 0,
+  iron: 0,
+  crystal: 0,
+  mystic: 0,
+  dark: 0,
+};
+
+const DEFAULT_BALLS: BallInventory = {
+  basic: 0,
+  iron: 0,
+  crystal: 0,
+  mystic: 0,
+  dark: 0,
+  exotic: 0,
+};
+
+const BALL_LABELS: Record<keyof BallInventory, string> = {
+  basic: "Basic",
+  iron: "Iron",
+  crystal: "Crystal",
+  mystic: "Mystic",
+  dark: "Dark",
+  exotic: "Exotic",
+};
+
+export default function RankCard({
+  username,
+  rank,
+  zenCoins,
+  ores,
+  petCount,
+  balls,
+}: RankCardProps) {
   const rankColor = RANK_COLORS[rank as keyof typeof RANK_COLORS] ?? "#94a3b8";
-  const totalOres = Object.values(ores).reduce((sum, count) => sum + count, 0);
+  const safeOres = { ...DEFAULT_ORES, ...(ores ?? {}) };
+  const safeBalls = { ...DEFAULT_BALLS, ...(balls ?? {}) };
+  const totalOres = Object.values(safeOres).reduce((sum, count) => sum + count, 0);
+  const totalBalls = Object.values(safeBalls).reduce((sum, count) => sum + count, 0);
 
   return (
     <div
@@ -46,26 +84,50 @@ export default function RankCard({ username, rank, zenCoins, ores }: RankCardPro
             fontFamily: "'Cinzel', serif",
           }}
         >
-          ★ {rank}
+          {rank}
         </span>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <Stat icon="🪙" label="Zen Coins" value={zenCoins} color="var(--gold)" />
-        <Stat icon="⛏️" label="Total Ores" value={totalOres} color="#60a5fa" />
-        <Stat icon="🎮" label="Pet Balls" value={0} color="#a855f7" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Stat label="Zen Coins" value={zenCoins} color="var(--gold)" />
+        <Stat label="Total Ores" value={totalOres} color="#60a5fa" />
+        <Stat label="Pets" value={petCount} color="#34d399" />
+        <Stat label="Pet Balls" value={totalBalls} color="#a855f7" />
+      </div>
+
+      <div
+        className="mt-5 rounded-lg border border-purple-800/30 p-4"
+        style={{ background: "rgba(0,0,0,0.22)" }}
+      >
+        <h3
+          className="mb-3 text-xs uppercase tracking-widest text-purple-400"
+          style={{ fontFamily: "'Cinzel', serif" }}
+        >
+          Ball Inventory
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+          {(Object.keys(BALL_LABELS) as Array<keyof BallInventory>).map((ballType) => (
+            <div
+              key={ballType}
+              className="rounded border border-purple-800/30 px-3 py-2 text-center"
+              style={{ background: "rgba(26,10,46,0.5)" }}
+            >
+              <div className="text-sm font-semibold text-purple-200">{safeBalls[ballType]}</div>
+              <div className="text-xs text-purple-500">{BALL_LABELS[ballType]}</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
-function Stat({ icon, label, value, color }: { icon: string; label: string; value: number; color: string }) {
+function Stat({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div
       className="rounded-lg p-3 text-center border border-purple-800/30"
       style={{ background: "rgba(0,0,0,0.3)" }}
     >
-      <div className="text-xl mb-1">{icon}</div>
       <div className="text-lg font-bold" style={{ color, fontFamily: "'Cinzel', serif" }}>
         {value}
       </div>

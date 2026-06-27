@@ -48,6 +48,8 @@ export default function MiningPage() {
           rank={playerData.rank}
           zenCoins={playerData.zenCoins}
           ores={playerData.ores}
+          petCount={playerData.pets.length}
+          balls={playerData.balls}
         />
 
         <CraftingPanel

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { usePlayerContext } from "@/contexts/PlayerContext";
@@ -43,6 +43,8 @@ export default function WorldPage() {
   const [activeZoneId, setActiveZoneId] = useState<string | null>(null);
   const [zoneModal, setZoneModal] = useState<ZoneModalState | null>(null);
   const [showMap, setShowMap] = useState(false);
+  const [camera, setCamera] = useState({ x: 0, y: 0 });
+  const targetCameraRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -102,6 +104,33 @@ export default function WorldPage() {
     }
   }, [x, y, activeZoneId, zoneModal, showMap, handleZoneEnter]);
 
+  const cameraX = clamp(x - viewport.width / 2, 0, Math.max(WORLD_WIDTH - viewport.width, 0));
+  const cameraY = clamp(y - viewport.height / 2, 0, Math.max(WORLD_HEIGHT - viewport.height, 0));
+
+  targetCameraRef.current = { x: cameraX, y: cameraY };
+
+  useEffect(() => {
+    let frameId: number;
+
+    function tick() {
+      setCamera((current) => {
+        const target = targetCameraRef.current;
+        const nextX = current.x + (target.x - current.x) * 0.14;
+        const nextY = current.y + (target.y - current.y) * 0.14;
+
+        if (Math.abs(nextX - current.x) < 0.01 && Math.abs(nextY - current.y) < 0.01) {
+          return current;
+        }
+
+        return { x: nextX, y: nextY };
+      });
+      frameId = requestAnimationFrame(tick);
+    }
+
+    frameId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameId);
+  }, []);
+
   if (authLoading || playerLoading || !playerData || viewport.width === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -117,9 +146,6 @@ export default function WorldPage() {
 
   const totalOres = Object.values(playerData.ores).reduce((sum, n) => sum + n, 0);
 
-  const cameraX = clamp(x - viewport.width / 2, 0, Math.max(WORLD_WIDTH - viewport.width, 0));
-  const cameraY = clamp(y - viewport.height / 2, 0, Math.max(WORLD_HEIGHT - viewport.height, 0));
-
   return (
     <div className="fixed inset-0 overflow-hidden bg-black">
       <WorldHUDTop
@@ -129,8 +155,8 @@ export default function WorldPage() {
       />
 
       <WorldMap
-        cameraX={cameraX}
-        cameraY={cameraY}
+        cameraX={camera.x}
+        cameraY={camera.y}
         viewportWidth={viewport.width}
         viewportHeight={viewport.height}
         activeZoneId={activeZoneId}
