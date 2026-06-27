@@ -1,6 +1,6 @@
 "use client";
 
-import { logoutUser } from "@/hooks/useauth";
+import { logoutUser } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 
 interface NavbarProps {

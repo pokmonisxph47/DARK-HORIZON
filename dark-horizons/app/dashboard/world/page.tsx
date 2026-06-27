@@ -2,14 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthContext } from "@/contexts/authcontext";
-import { getUserData } from "@/hooks/useauth";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { usePlayerContext } from "@/contexts/PlayerContext";
 import { useWorldMovement } from "@/hooks/useWorldMovement";
-import WorldMap from "@/components/world/worldmap";
-import PlayerCharacter from "@/components/world/playercharacter";
-import MobileControls from "@/components/world/mobilecontrols";
-import { WorldHUDTop, WorldHUDBottom } from "@/components/world/worldhud";
-import { ZoneAnnouncementModal, MapOverviewModal } from "@/components/world/zonemodal";
+import WorldMap from "@/components/world/WorldMap";
+import PlayerCharacter from "@/components/world/PlayerCharacter";
+import MobileControls from "@/components/world/MobileControls";
+import { WorldHUDTop, WorldHUDBottom } from "@/components/world/WorldHUD";
+import { ZoneAnnouncementModal, MapOverviewModal } from "@/components/world/ZoneModal";
 import {
   INTERACTIVE_ZONE_TYPES,
   PLAYER_SIZE,
@@ -17,17 +17,10 @@ import {
   SPAWN_Y,
   WORLD_HEIGHT,
   WORLD_WIDTH,
-  WorldZone,
+  type WorldZone,
   ZONES,
   isPointInZone,
 } from "@/lib/worldzones";
-
-interface PlayerData {
-  username: string;
-  rank: string;
-  zenCoins: number;
-  ores: number;
-}
 
 interface ZoneModalState {
   icon: string;
@@ -42,34 +35,21 @@ function clamp(value: number, min: number, max: number) {
 }
 
 export default function WorldPage() {
-  const { user, loading } = useAuthContext();
+  const { user, loading: authLoading } = useAuthContext();
+  const { playerData, playerLoading } = usePlayerContext();
   const router = useRouter();
 
-  const [playerData, setPlayerData] = useState<PlayerData | null>(null);
-  const [dataLoading, setDataLoading] = useState(true);
   const [viewport, setViewport] = useState({ width: 0, height: 0 });
   const [activeZoneId, setActiveZoneId] = useState<string | null>(null);
   const [zoneModal, setZoneModal] = useState<ZoneModalState | null>(null);
   const [showMap, setShowMap] = useState(false);
 
-  // Auth guard
   useEffect(() => {
-    if (!loading && !user) {
+    if (!authLoading && !user) {
       router.push("/login");
     }
-  }, [user, loading, router]);
+  }, [user, authLoading, router]);
 
-  // Load player stats (single read, same shape as the dashboard)
-  useEffect(() => {
-    if (user) {
-      getUserData(user.uid).then((data) => {
-        if (data) setPlayerData(data as PlayerData);
-        setDataLoading(false);
-      });
-    }
-  }, [user]);
-
-  // Track viewport size for the camera
   useEffect(() => {
     function update() {
       setViewport({ width: window.innerWidth, height: window.innerHeight });
@@ -96,16 +76,6 @@ export default function WorldPage() {
         router.push("/dashboard");
         return;
       }
-      if (zone.type === "mining") {
-        setZoneModal({
-          icon: zone.icon,
-          title: zone.name,
-          message: "The mines are still being carved out. Full mining gameplay arrives in the next update!",
-          color: zone.color,
-          comingSoon: true,
-        });
-        return;
-      }
       setZoneModal({
         icon: zone.icon,
         title: zone.name,
@@ -117,7 +87,6 @@ export default function WorldPage() {
     [router]
   );
 
-  // Zone collision detection — only re-checks when the player actually moves
   useEffect(() => {
     if (zoneModal || showMap) return;
 
@@ -133,7 +102,7 @@ export default function WorldPage() {
     }
   }, [x, y, activeZoneId, zoneModal, showMap, handleZoneEnter]);
 
-  if (loading || dataLoading || !playerData || viewport.width === 0) {
+  if (authLoading || playerLoading || !playerData || viewport.width === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -146,12 +115,18 @@ export default function WorldPage() {
     );
   }
 
+  const totalOres = Object.values(playerData.ores).reduce((sum, n) => sum + n, 0);
+
   const cameraX = clamp(x - viewport.width / 2, 0, Math.max(WORLD_WIDTH - viewport.width, 0));
   const cameraY = clamp(y - viewport.height / 2, 0, Math.max(WORLD_HEIGHT - viewport.height, 0));
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-black">
-      <WorldHUDTop rank={playerData.rank} zenCoins={playerData.zenCoins} ores={playerData.ores} />
+      <WorldHUDTop
+        rank={playerData.rank}
+        zenCoins={playerData.zenCoins}
+        totalOres={totalOres}
+      />
 
       <WorldMap
         cameraX={cameraX}
@@ -197,7 +172,9 @@ export default function WorldPage() {
         />
       )}
 
-      {showMap && <MapOverviewModal playerX={x} playerY={y} onClose={() => setShowMap(false)} />}
+      {showMap && (
+        <MapOverviewModal playerX={x} playerY={y} onClose={() => setShowMap(false)} />
+      )}
     </div>
   );
 }

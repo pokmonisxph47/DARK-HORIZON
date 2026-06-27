@@ -1,24 +1,15 @@
+import { RANK_COLORS } from "@/constants/ranks";
+import type { OreInventory } from "@/types/player";
+
 interface RankCardProps {
   username: string;
   rank: string;
   zenCoins: number;
-  ores: Record<string, number>;
+  ores: OreInventory;
 }
 
-const RANK_COLORS: Record<string, string> = {
-  Noob: "#94a3b8",
-  Pro: "#22c55e",
-  Awsunm: "#3b82f6",
-  God: "#f59e0b",
-  Heavens: "#a855f7",
-  "Over Heavens": "#ec4899",
-  "Dark Horizon": "#ef4444",
-};
-
 export default function RankCard({ username, rank, zenCoins, ores }: RankCardProps) {
-  const rankColor = RANK_COLORS[rank] || "#94a3b8";
-  
-  // Sum all ores (stone + iron + crystal + mystic + dark)
+  const rankColor = RANK_COLORS[rank as keyof typeof RANK_COLORS] ?? "#94a3b8";
   const totalOres = Object.values(ores).reduce((sum, count) => sum + count, 0);
 
   return (

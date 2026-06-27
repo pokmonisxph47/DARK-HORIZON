@@ -1,33 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuthContext } from "@/contexts/authcontext";
-import { getUserData } from "@/hooks/useauth";
-import Navbar from "@/components/navbar";
-import RankCard from "@/components/rankcard";
-import AreaCard from "@/components/areacard";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { usePlayerContext } from "@/contexts/PlayerContext";
+import { hasRank } from "@/constants/ranks";
+import Navbar from "@/components/Navbar";
+import RankCard from "@/components/RankCard";
+import AreaCard from "@/components/AreaCard";
+import type { Rank } from "@/types/player";
 
-// Define what a player's data looks like
-interface PlayerData {
-  username: string;
-  rank: string;
-  zenCoins: number;
-  ores: number;
-  berries: number;
-  pets: string[];
-}
-
-// Rank order — used to check if an area is unlocked
-const RANK_ORDER = ["Noob", "Pro", "Awsunm", "God", "Heavens", "Over Heavens", "Dark Horizon"];
-
-function hasRank(playerRank: string, requiredRank: string): boolean {
-  return RANK_ORDER.indexOf(playerRank) >= RANK_ORDER.indexOf(requiredRank);
-}
-
-// All game areas
-const AREAS = [
+// Game areas — rank requirements match GAME_RULES.md exactly.
+const AREAS: { name: string; icon: string; description: string; requiredRank: Rank }[] = [
   {
     name: "Pet Catching Area",
     icon: "🐾",
@@ -50,59 +35,46 @@ const AREAS = [
     name: "1st Sea",
     icon: "🌊",
     description: "Sail the outer waters of the Mystic Seas. Adventure awaits beyond the horizon.",
-    requiredRank: "Pro",
+    requiredRank: "Awesome",
   },
   {
     name: "2nd Sea",
     icon: "🌀",
     description: "The deeper currents hold stronger monsters and greater rewards.",
-    requiredRank: "Awsunm",
+    requiredRank: "God",
   },
   {
     name: "3rd Sea",
     icon: "🔱",
     description: "Ancient maritime gods rule these treacherous waters. Only the worthy survive.",
-    requiredRank: "God",
+    requiredRank: "Heavens",
   },
   {
     name: "Beast Sea",
     icon: "🐉",
     description: "The legendary sea where colossal beasts from legend roam freely.",
-    requiredRank: "Heavens",
+    requiredRank: "Over Heavens",
   },
   {
     name: "Dungeons",
     icon: "🏰",
     description: "Sealed ruins of the Lost Kingdoms, filled with relics and ultimate challenges.",
-    requiredRank: "Over Heavens",
+    requiredRank: "God",
   },
 ];
 
 export default function DashboardPage() {
-  const { user, loading } = useAuthContext();
+  const { user, loading: authLoading } = useAuthContext();
+  const { playerData, playerLoading } = usePlayerContext();
   const router = useRouter();
-  const [playerData, setPlayerData] = useState<PlayerData | null>(null);
-  const [dataLoading, setDataLoading] = useState(true);
 
-  // Redirect to login if not authenticated
   useEffect(() => {
-    if (!loading && !user) {
+    if (!authLoading && !user) {
       router.push("/login");
     }
-  }, [user, loading, router]);
+  }, [user, authLoading, router]);
 
-  // Load player data from Firestore (only once on mount)
-  useEffect(() => {
-    if (user) {
-      getUserData(user.uid).then((data) => {
-        if (data) setPlayerData(data as PlayerData);
-        setDataLoading(false);
-      });
-    }
-  }, [user]);
-
-  // Loading screen
-  if (loading || dataLoading) {
+  if (authLoading || playerLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -122,16 +94,13 @@ export default function DashboardPage() {
       <Navbar username={playerData.username} />
 
       <main className="max-w-5xl mx-auto px-4 py-8">
-        {/* Player stats card */}
         <RankCard
           username={playerData.username}
           rank={playerData.rank}
           zenCoins={playerData.zenCoins}
           ores={playerData.ores}
-          berries={playerData.berries}
         />
 
-        {/* Enter the explorable world */}
         <Link
           href="/dashboard/world"
           className="btn-gold w-full flex items-center justify-center gap-3 py-4 rounded-xl text-lg mb-8 shadow-xl"
@@ -139,7 +108,6 @@ export default function DashboardPage() {
           🗺️ Enter the World
         </Link>
 
-        {/* Section title */}
         <div className="flex items-center gap-4 mb-6">
           <div className="h-px flex-1 bg-gradient-to-r from-purple-800 to-transparent" />
           <h2
@@ -151,7 +119,6 @@ export default function DashboardPage() {
           <div className="h-px flex-1 bg-gradient-to-l from-purple-800 to-transparent" />
         </div>
 
-        {/* Area cards grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {AREAS.map((area) => {
             const isLocked = !hasRank(playerData.rank, area.requiredRank);
@@ -163,15 +130,16 @@ export default function DashboardPage() {
                 description={area.description}
                 isLocked={isLocked}
                 requiredRank={isLocked ? area.requiredRank : undefined}
-                onClick={() => alert(`${area.name} coming soon!`)}
+                onClick={() => alert(`${area.name} — enter from the world map!`)}
               />
             );
           })}
         </div>
 
-        {/* Pets section */}
-        <div className="mt-8 p-5 rounded-xl border border-purple-800/40"
-          style={{ background: "rgba(26,10,46,0.7)" }}>
+        <div
+          className="mt-8 p-5 rounded-xl border border-purple-800/40"
+          style={{ background: "rgba(26,10,46,0.7)" }}
+        >
           <h3
             className="text-purple-300 mb-3"
             style={{ fontFamily: "'Cinzel', serif" }}
@@ -180,13 +148,16 @@ export default function DashboardPage() {
           </h3>
           {playerData.pets.length === 0 ? (
             <p className="text-purple-600 text-sm italic">
-              You have no pets yet. Visit the Pet Catching Area to find one!
+              You have no pets yet. Walk to the forest in the world to find one!
             </p>
           ) : (
             <div className="flex gap-2 flex-wrap">
               {playerData.pets.map((pet, i) => (
-                <span key={i} className="bg-purple-900/50 border border-purple-700 rounded-full px-3 py-1 text-sm text-purple-300">
-                  {pet}
+                <span
+                  key={i}
+                  className="bg-purple-900/50 border border-purple-700 rounded-full px-3 py-1 text-sm text-purple-300"
+                >
+                  {pet.emoji} {pet.name}
                 </span>
               ))}
             </div>

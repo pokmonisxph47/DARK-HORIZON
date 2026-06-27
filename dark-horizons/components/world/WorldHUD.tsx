@@ -1,26 +1,19 @@
 "use client";
 
+import { RANK_COLORS } from "@/constants/ranks";
+
 interface WorldHUDTopProps {
   rank: string;
   zenCoins: number;
-  ores: number;
+  totalOres: number;
 }
 
-const RANK_COLORS: Record<string, string> = {
-  Noob: "#94a3b8",
-  Pro: "#22c55e",
-  Awsunm: "#3b82f6",
-  God: "#f59e0b",
-  Heavens: "#a855f7",
-  "Over Heavens": "#ec4899",
-  "Dark Horizon": "#ef4444",
-};
-
-export function WorldHUDTop({ rank, zenCoins, ores }: WorldHUDTopProps) {
-  const rankColor = RANK_COLORS[rank] || "#94a3b8";
+export function WorldHUDTop({ rank, zenCoins, totalOres }: WorldHUDTopProps) {
+  const rankColor = RANK_COLORS[rank as keyof typeof RANK_COLORS] ?? "#94a3b8";
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-40 px-3 py-2 md:px-5 md:py-3 flex items-center justify-between gap-2 backdrop-blur-md"
+    <div
+      className="fixed top-0 left-0 right-0 z-40 px-3 py-2 md:px-5 md:py-3 flex items-center justify-between gap-2 backdrop-blur-md"
       style={{
         background: "linear-gradient(180deg, rgba(10,5,20,0.85) 0%, rgba(10,5,20,0) 100%)",
       }}
@@ -28,7 +21,7 @@ export function WorldHUDTop({ rank, zenCoins, ores }: WorldHUDTopProps) {
       <Pill icon="★" label={rank} color={rankColor} />
       <div className="flex items-center gap-2">
         <Pill icon="🪙" label={zenCoins.toLocaleString()} color="#c9a84c" />
-        <Pill icon="⛏️" label={ores.toLocaleString()} color="#60a5fa" />
+        <Pill icon="⛏️" label={totalOres.toLocaleString()} color="#60a5fa" />
       </div>
     </div>
   );
